@@ -1,0 +1,74 @@
+---
+title: "Optim - in class example"
+author: "Naim Rashid"
+date: "2/11/2019"
+output: 
+  html_document:
+    number_sections: true
+    toc: true
+    toc_float: true
+header_includes:
+- \usepackage{amsmath}
+- \usepackage{amssymb}
+- \usepackage{amsthm}
+include-before:
+- '\newcommand{\bfm}[1]{\ensuremath{\mathbf{#1}}}'
+- '\newcommand{\bdm}[1]{\ensuremath{\boldsymbol{#1}}}'
+- '$\def \d \bfm{d}$'
+- '$\def \e \bfm{e}$'
+- '$\def \g \bfm{g}$'
+- '$\def \I \bfm{I}$'
+- '$\def \l \bfm{l}$'
+- '$\def \M \bfm{M}$'
+- '$\def \W \bfm{W}$'
+- '$\def \y \bfm{y}$'
+- '$\def \Y \bfm{Y}$'
+- '$\def \z \bfm{z}$'
+- '$\def \Omegab \bdm{\Omega}$'
+- '$\def \pib \bdm{\pi}$'
+- '$\def \thetab \bdm{\theta}$'
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+A statistician wanted to fit a model to some data she had collected recently.  Here she assumed that the number of fish caught by fisherman in a study were related to their age, the size of their boat in feet, and the size of their storage cooler in liters.  
+
+She tried fitting a regular possion GLM but the fit did not seem right.  Instead, she wanted to fit a mixture model assuming that there are actually two latent subpopulations in the data. There she can model the mean of each subpopulation with separate poisson regression models. 
+
+Lets write the general form of a mixture model with $K$ mixture components, where each component corresponds to a particular assumed subpopulation in the data.  We can then write log-likelihood for this mixture as the following,  assuming $K = 2$ and $p = 4$, so
+
+$$l(\boldsymbol{\beta}_1, \boldsymbol{\beta}_2, \pi_1, \pi_2) = \sum_{i=1}^n \log\left( \sum_{k =1}^2 \pi_kf_k(y_i| \boldsymbol{X}_i, \boldsymbol{\beta}_k)\right),$$ 
+
+where $f_k(y_i|\boldsymbol{X}_i, \boldsymbol{\beta}_k) = \frac{e^{-\lambda_{ik}}\lambda_{ik}^{y_i}}{y_i!}$, $\lambda_{ik} = \exp(\boldsymbol{X}_{i}\boldsymbol{\beta}_k)$, and $\sum_{k = 1}^K \pi_k = 1$.  In this example, $\boldsymbol{X}_i$ is a $1 \times 4$ vector pertaining to the intercept, age, log boat length in feet, and log cooler size in liters, and $\boldsymbol{\beta}_k = (\beta_0, \beta_1, \beta_2, \beta_3)^T$ are the regression coefficients component $k$ pertaining to $\boldsymbol{X}_i$.  
+
+Find a way to maximize this model to obtain estimates for $\hat{\thetab} = (\hat{\boldsymbol{\beta}_1},\hat{\boldsymbol{\beta}_2})^T$ using the data from fish.txt.  
+
+To simplify the problem, we assume that $\pi_1 = 0.533$ is fixed and known ($\pi_2 = 1-\pi_1$), and use the starting values and code below. 
+
+```{r}
+# read in data
+fish = read.table("/Users/naimrashid/Dropbox/UNC_bios_line/Bios735/statcomp_src/em/fish.txt", header = T, sep = "\t")
+
+# create common covariate matrix
+X = model.matrix(~1 + age + boat_length + cooler, data = fish)
+
+# scaling the predictors to simplify the maximization
+X[,2:4] = scale(X[,2:4])
+
+# starting values and parameters
+tol = 10^-4
+beta = c(
+      2.324, 0,0,0,    # first component starting betas
+      3.375, 0,0,0   # second component starting betas
+      )
+maxit =5000
+pi1 = 0.533
+pi2 = 1-pi
+```
+
+
+
+
+
